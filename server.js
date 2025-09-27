@@ -1,11 +1,8 @@
-// server.js (ESM)
 import dotenv from "dotenv";
-dotenv.config(); // MUST run before using process.env
+dotenv.config();
 
 import express from "express";
 import Stripe from "stripe";
-import path from "path";
-import { fileURLToPath } from "url";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   console.error("❌ Missing STRIPE_SECRET_KEY in environment variables.");
@@ -15,21 +12,10 @@ if (!process.env.STRIPE_SECRET_KEY) {
 const app = express();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2023-08-16" });
 
-// --- ESM-friendly __dirname ---
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Serve static files (success.html, cancel.html, etc.)
-app.use(express.static(__dirname));
-
 app.use(express.json());
+app.use(express.static("."));
 
-// ✅ Explicit route to serve index.html
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
-});
-
-// Stripe Checkout endpoint
+// Create checkout session
 app.post("/create-checkout-session", async (req, res) => {
   try {
     const session = await stripe.checkout.sessions.create({
@@ -45,8 +31,8 @@ app.post("/create-checkout-session", async (req, res) => {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.BASE_URL}/success.html`,
-      cancel_url: `${process.env.BASE_URL}/cancel.html`,
+      success_url: 'https://stalwart-otter-d134a8.netlify.app/success.html?session_id={CHECKOUT_SESSION_ID}',
+      cancel_url: 'https://stalwart-otter-d134a8.netlify.app/cancel.html',
     });
     res.json({ url: session.url });
   } catch (err) {
@@ -55,6 +41,19 @@ app.post("/create-checkout-session", async (req, res) => {
   }
 });
 
-// ✅ Use Render's dynamic port
+// Endpoint to check session status
+app.get("/session_status", async (req, res) => {
+  try {
+    const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
+    res.json({
+      status: session.payment_status,
+      amount_total: session.amount_total,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Dynamic port for Render
 const PORT = process.env.PORT || 4242;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
