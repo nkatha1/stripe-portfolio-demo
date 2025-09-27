@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -10,10 +9,18 @@
 
   <script src="https://js.stripe.com/v3/"></script>
   <script>
+    // Your Render backend URL
+    const BASE_URL = 'https://stripe-portfolio-demo.onrender.com';
+
     document.getElementById('checkout').addEventListener('click', async () => {
-      const res = await fetch('/create-checkout-session', { method: 'POST' });
-      const { url } = await res.json();
-      window.location.href = url;
+      try {
+        const res = await fetch(`${BASE_URL}/create-checkout-session`, { method: 'POST' });
+        const { url } = await res.json();
+        window.location.href = url;
+      } catch (err) {
+        console.error('Error creating checkout session:', err);
+        alert('Failed to start checkout. Please try again.');
+      }
     });
   </script>
 </body>
