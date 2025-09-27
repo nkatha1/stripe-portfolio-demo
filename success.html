@@ -1,12 +1,35 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>Payment Successful</title>
-  </head>
-  <body>
-    <h1>🎉 Payment Successful!</h1>
-    <p>Thank you for supporting my portfolio.</p>
-    <a href="/">Return to Home</a>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <title>Payment Success</title>
+</head>
+<body>
+  <h1>Thank you for your payment!</h1>
+  <p id="message">Verifying your payment...</p>
+
+  <script>
+    const BASE_URL = 'https://stripe-portfolio-demo.onrender.com';
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session_id');
+
+    if (sessionId) {
+      fetch(`${BASE_URL}/session_status?session_id=${sessionId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'paid') {
+            document.getElementById('message').textContent = `Payment of $${data.amount_total / 100} was successful!`;
+          } else {
+            document.getElementById('message').textContent = 'Payment not completed.';
+          }
+        })
+        .catch(err => {
+          console.error('Error fetching session status:', err);
+          document.getElementById('message').textContent = 'Error verifying payment.';
+        });
+    } else {
+      document.getElementById('message').textContent = 'No session ID found.';
+    }
+  </script>
+</body>
 </html>
