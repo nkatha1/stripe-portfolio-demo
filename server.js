@@ -1,4 +1,4 @@
-// server.js (complete, ESM)
+// server.js (ESM)
 import dotenv from "dotenv";
 dotenv.config(); // MUST run before using process.env
 
@@ -6,7 +6,7 @@ import express from "express";
 import Stripe from "stripe";
 
 if (!process.env.STRIPE_SECRET_KEY) {
-  console.error("Missing STRIPE_SECRET_KEY in .env — open .env and add it.");
+  console.error("❌ Missing STRIPE_SECRET_KEY in environment variables.");
   process.exit(1);
 }
 
@@ -21,22 +21,26 @@ app.post("/create-checkout-session", async (req, res) => {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
-      line_items: [{
-        price_data: {
-          currency: "usd",
-          product_data: { name: "Support My Portfolio" },
-          unit_amount: 500,
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: { name: "Support My Portfolio" },
+            unit_amount: 500, // $5.00
+          },
+          quantity: 1,
         },
-        quantity: 1,
-      }],
-      success_url: "http://localhost:4242/success.html",
-      cancel_url: "http://localhost:4242/cancel.html",
+      ],
+      success_url: `${process.env.BASE_URL}/success.html`,
+      cancel_url: `${process.env.BASE_URL}/cancel.html`,
     });
     res.json({ url: session.url });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Stripe error:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-app.listen(4242, () => console.log("Server running on http://localhost:4242"));
+// ✅ Use Render's dynamic port
+const PORT = process.env.PORT || 4242;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
