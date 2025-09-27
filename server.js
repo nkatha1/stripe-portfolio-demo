@@ -4,6 +4,8 @@ dotenv.config(); // MUST run before using process.env
 
 import express from "express";
 import Stripe from "stripe";
+import path from "path";
+import { fileURLToPath } from "url";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   console.error("❌ Missing STRIPE_SECRET_KEY in environment variables.");
@@ -13,9 +15,21 @@ if (!process.env.STRIPE_SECRET_KEY) {
 const app = express();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2023-08-16" });
 
-app.use(express.json());
-app.use(express.static(".")); // serve index.html and success/cancel pages
+// --- ESM-friendly __dirname ---
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
+// Serve static files (success.html, cancel.html, etc.)
+app.use(express.static(__dirname));
+
+app.use(express.json());
+
+// ✅ Explicit route to serve index.html
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
+
+// Stripe Checkout endpoint
 app.post("/create-checkout-session", async (req, res) => {
   try {
     const session = await stripe.checkout.sessions.create({
