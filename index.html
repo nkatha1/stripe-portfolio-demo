@@ -9,17 +9,24 @@
 
   <script src="https://js.stripe.com/v3/"></script>
   <script>
-    // ✅ Corrected: Use your Render backend
+    // ✅ Use your Render backend
     const BASE_URL = 'https://stripe-portfolio-demo-3.onrender.com';
 
     document.getElementById('checkout').addEventListener('click', async () => {
       try {
         const res = await fetch(`${BASE_URL}/create-checkout-session`, {
           method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         });
 
         const { url } = await res.json();
-        window.location.href = url;
+        if (url) {
+          window.location.href = url;
+        } else {
+          alert('Checkout session failed. Please try again.');
+        }
       } catch (err) {
         console.error('Error creating checkout session:', err);
         alert('Failed to start checkout. Please try again.');
