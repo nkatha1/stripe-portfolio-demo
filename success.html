@@ -9,7 +9,9 @@
   <p id="message">Verifying your payment...</p>
 
   <script>
-    const BASE_URL = 'https://stripe-portfolio-demo.onrender.com';
+    // Use Vercel backend
+    const BASE_URL = 'https://stripe-portfolio-demo.vercel.app';
+
     const urlParams = new URLSearchParams(window.location.search);
     const sessionId = urlParams.get('session_id');
 
@@ -18,17 +20,17 @@
         .then(res => res.json())
         .then(data => {
           if (data.status === 'paid') {
-            document.getElementById('message').textContent = `Payment of $${data.amount_total / 100} was successful!`;
+            document.getElementById('message').textContent = `✅ Payment of $${data.amount_total / 100} was successful!`;
           } else {
-            document.getElementById('message').textContent = 'Payment not completed.';
+            document.getElementById('message').textContent = '⚠️ Payment not completed.';
           }
         })
         .catch(err => {
           console.error('Error fetching session status:', err);
-          document.getElementById('message').textContent = 'Error verifying payment.';
+          document.getElementById('message').textContent = '❌ Error verifying payment.';
         });
     } else {
-      document.getElementById('message').textContent = 'No session ID found.';
+      document.getElementById('message').textContent = '⚠️ No session ID found.';
     }
   </script>
 </body>
