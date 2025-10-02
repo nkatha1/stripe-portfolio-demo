@@ -5,6 +5,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 import express from "express";
+import cors from "cors"; // ✅ Import CORS
 import Stripe from "stripe";
 
 // Check if Stripe secret key is set
@@ -17,6 +18,13 @@ const app = express();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2023-08-16",
 });
+
+// ✅ Enable CORS for frontend (Vercel or wherever it’s hosted)
+app.use(
+  cors({
+    origin: "*", // You can replace * with your specific frontend URL for more security
+  })
+);
 
 app.use(express.json());
 app.use(express.static("."));
