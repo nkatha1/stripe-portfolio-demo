@@ -9,12 +9,15 @@
 
   <script src="https://js.stripe.com/v3/"></script>
   <script>
-    // Use Vercel backend URL
-    const BASE_URL = 'https://stripe-portfolio-demo.vercel.app';
+    // ✅ Corrected: Use your Render backend
+    const BASE_URL = 'https://stripe-portfolio-demo-3.onrender.com';
 
     document.getElementById('checkout').addEventListener('click', async () => {
       try {
-        const res = await fetch(`${BASE_URL}/create-checkout-session`, { method: 'POST' });
+        const res = await fetch(`${BASE_URL}/create-checkout-session`, {
+          method: 'POST',
+        });
+
         const { url } = await res.json();
         window.location.href = url;
       } catch (err) {
